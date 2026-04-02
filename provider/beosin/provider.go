@@ -125,7 +125,9 @@ func (p *Provider) depositRiskV2(ctx context.Context, req *kyt.TransactionRiskRe
 	beosinReq := beosin.DepositRequest{
 		ChainID: req.ChainID,
 		Hash:    req.TxHash,
-		Token:   req.Token,
+	}
+	if req.Token != nil {
+		beosinReq.Token = *req.Token
 	}
 
 	resp, err := p.client.DepositTransactionAssessment(ctx, &beosinReq)
@@ -145,7 +147,9 @@ func (p *Provider) depositRiskV4(ctx context.Context, req *kyt.TransactionRiskRe
 	beosinReq := beosin.DepositRequest{
 		ChainID: req.ChainID,
 		Hash:    req.TxHash,
-		Token:   req.Token,
+	}
+	if req.Token != nil {
+		beosinReq.Token = *req.Token
 	}
 
 	resp, err := p.client.V4DepositTransactionAssessment(ctx, &beosinReq)
@@ -183,7 +187,9 @@ func (p *Provider) withdrawRiskV2(ctx context.Context, req *kyt.TransactionRiskR
 	beosinReq := beosin.WithdrawalRequest{
 		ChainID: req.ChainID,
 		Hash:    req.TxHash,
-		Token:   req.Token,
+	}
+	if req.Token != nil {
+		beosinReq.Token = *req.Token
 	}
 
 	resp, err := p.client.WithdrawalTransactionAssessment(ctx, &beosinReq)
@@ -203,7 +209,9 @@ func (p *Provider) withdrawRiskV4(ctx context.Context, req *kyt.TransactionRiskR
 	beosinReq := beosin.WithdrawalRequest{
 		ChainID: req.ChainID,
 		Hash:    req.TxHash,
-		Token:   req.Token,
+	}
+	if req.Token != nil {
+		beosinReq.Token = *req.Token
 	}
 
 	resp, err := p.client.V4WithdrawalTransactionAssessment(ctx, &beosinReq)

@@ -37,10 +37,11 @@ func directExample(appID, appSecret string) {
 		appID,
 		appSecret,
 		beosin.WithTimeout(30*time.Second),
+		beosin.WithDebug(true),
 	)
 
 	// Create provider with client
-	provider := beosinprovider.New(client)
+	provider := beosinprovider.New(client, beosinprovider.WithV4())
 	defer provider.Close()
 
 	// Run assessments
@@ -53,10 +54,11 @@ func registryExample(appID, appSecret string) {
 		appID,
 		appSecret,
 		beosin.WithTimeout(30*time.Second),
+		beosin.WithDebug(true),
 	)
 
 	// Register provider with the registry
-	registry.MustRegisterBeosin(client)
+	registry.MustRegisterBeosin(client, beosinprovider.WithV4())
 
 	// Get provider from registry
 	provider, err := registry.GetBeosin()
@@ -104,39 +106,11 @@ func printResult(result *kyt.RiskResult) {
 	fmt.Printf("Risk Level: %s\n", result.Level)
 	fmt.Printf("Score: %.2f\n", result.Score)
 
+	fmt.Printf("Provider: %s (API: %s)\n",
+		result.Metadata.Provider, result.Metadata.APIVersion)
+
 	if result.Detail != nil {
-		if len(result.Detail.Tags) > 0 {
-			fmt.Printf("Tags: %v\n", result.Detail.Tags)
-		}
-
-		if len(result.Detail.Factors) > 0 {
-			fmt.Println("Risk Factors:")
-			for _, f := range result.Detail.Factors {
-				fmt.Printf("  - %s: %s", f.Category, f.Severity)
-				if f.Rate > 0 {
-					fmt.Printf(" (%.2f%%)", f.Rate*100)
-				}
-				if f.Hops > 0 {
-					fmt.Printf(" [%d hops]", f.Hops)
-				}
-				fmt.Println()
-			}
-		}
-
-		if result.Detail.IncomingRisk != nil {
-			fmt.Printf("Incoming Risk: %s (Score: %.2f)\n",
-				result.Detail.IncomingRisk.Level, result.Detail.IncomingRisk.Score)
-		}
-
-		if result.Detail.OutgoingRisk != nil {
-			fmt.Printf("Outgoing Risk: %s (Score: %.2f)\n",
-				result.Detail.OutgoingRisk.Level, result.Detail.OutgoingRisk.Score)
-		}
-	}
-
-	if result.Metadata != nil {
-		fmt.Printf("Provider: %s (API: %s)\n",
-			result.Metadata.Provider, result.Metadata.APIVersion)
+		fmt.Printf("Detail: %+v\n", result.Detail)
 	}
 
 	// Example of threshold checking
