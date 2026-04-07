@@ -2,6 +2,7 @@ package beosin
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ABT-Tech-Limited/beosin-go"
 	"github.com/ABT-Tech-Limited/kytunified/kyt"
@@ -224,6 +225,45 @@ func (p *Provider) withdrawRiskV4(ctx context.Context, req *kyt.TransactionRiskR
 	}
 
 	return p.mapperV4.MapTransactionRisk(resp), nil
+}
+
+// Test verifies that the Beosin provider is properly configured by performing
+// an address risk assessment on the ETH zero address.
+func (p *Provider) Test(ctx context.Context) *kyt.TestResult {
+	beosinReq := &beosin.AddressRiskRequest{
+		ChainID: kyt.ChainIDETH,
+		Address: "0x0000000000000000000000000000000000000000",
+	}
+
+	if p.useV4 {
+		resp, err := p.client.V4EOAAddressRiskAssessment(ctx, beosinReq)
+		if err != nil {
+			return p.classifyTestError(err)
+		}
+		if !resp.IsSuccess() {
+			return &kyt.TestResult{Valid: false, Reason: resp.Msg}
+		}
+	} else {
+		resp, err := p.client.EOAAddressRiskAssessment(ctx, beosinReq)
+		if err != nil {
+			return p.classifyTestError(err)
+		}
+		if !resp.IsSuccess() {
+			return &kyt.TestResult{Valid: false, Reason: resp.Msg}
+		}
+	}
+	return &kyt.TestResult{Valid: true}
+}
+
+// classifyTestError distinguishes HTTP/network errors from API business errors.
+func (p *Provider) classifyTestError(err error) *kyt.TestResult {
+	if apiErr, ok := err.(*beosin.APIError); ok {
+		return &kyt.TestResult{
+			Valid:  false,
+			Reason: fmt.Sprintf("api error (code=%d): %s", apiErr.Code, apiErr.Message),
+		}
+	}
+	return &kyt.TestResult{Err: err}
 }
 
 // Close releases resources held by the provider.

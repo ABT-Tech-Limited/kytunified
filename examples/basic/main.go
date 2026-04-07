@@ -44,6 +44,9 @@ func directExample(appID, appSecret string) {
 	provider := beosinprovider.New(client, beosinprovider.WithV4())
 	defer provider.Close()
 
+	// Test provider configuration
+	testProvider(provider)
+
 	// Run assessments
 	runAssessments(provider)
 }
@@ -71,8 +74,27 @@ func registryExample(appID, appSecret string) {
 	// List available providers
 	fmt.Printf("Available providers: %v\n", registry.List())
 
+	// Test provider configuration
+	testProvider(provider)
+
 	// Run assessments
 	runAssessments(provider)
+}
+
+func testProvider(provider kyt.Provider) {
+	ctx := context.Background()
+
+	fmt.Printf("\n--- Provider Test ---\n")
+	result := provider.Test(ctx)
+	if result.Err != nil {
+		fmt.Printf("Test inconclusive (non-business error): %v\n", result.Err)
+		return
+	}
+	if !result.Valid {
+		fmt.Printf("Configuration invalid: %s\n", result.Reason)
+		return
+	}
+	fmt.Println("Configuration OK")
 }
 
 func runAssessments(provider kyt.Provider) {

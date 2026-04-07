@@ -8,6 +8,9 @@ type Provider interface {
 	// Name returns the provider name (e.g., "beosin", "chainalysis").
 	Name() string
 
+	// Test verifies that the provider is properly configured and operational.
+	Test(ctx context.Context) *TestResult
+
 	// AddressRisk performs risk assessment on a blockchain address.
 	AddressRisk(ctx context.Context, req *AddressRiskRequest) (*RiskResult, error)
 
@@ -19,6 +22,19 @@ type Provider interface {
 
 	// Close releases any resources held by the provider.
 	Close() error
+}
+
+// TestResult contains the result of a provider configuration test.
+type TestResult struct {
+	// Err holds non-business errors (network, timeout, DNS, etc.)
+	// When set, Valid/Reason are meaningless — the test was inconclusive.
+	Err error
+
+	// Valid indicates whether the provider configuration is correct.
+	Valid bool
+
+	// Reason explains why the configuration is invalid (when Valid is false and Err is nil).
+	Reason string
 }
 
 // ProviderInfo contains information about a provider.
